@@ -104,11 +104,19 @@ class CalcTest: XCTestCase {
         task = calcProcess("x")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
-        
+
+        task = calcProcess("10101", "10110")
+        XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
+        XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
+
         task = calcProcess("33", "-")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
-        
+
+        task = calcProcess("66", "-6")
+        XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
+        XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
+
         task = calcProcess("3.1", "-4", "xyz")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
@@ -120,7 +128,15 @@ class CalcTest: XCTestCase {
         task = calcProcess("50%", "+", "25%")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
-    }
+
+        task = calcProcess("3", "x", "4.5.6")
+        XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
+        XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
+
+        task = calcProcess("7", "foo", "8")
+        XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
+        XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
+}
     
     func testAdd() {
         var task: calcProcess
