@@ -9,7 +9,7 @@
 import XCTest
 import GameKit // for deterministic random number generator
 
-let randomSource = GKLinearCongruentialRandomSource(seed: 6)
+let randomSource = GKLinearCongruentialRandomSource(seed: 7)
 
 let calcBundle = Bundle(identifier: "UTS.CalcTest")!
 let calcPath = ProcessInfo.processInfo.environment["CALC_PATH"] ?? calcBundle.path(forResource: "calc", ofType: nil)
