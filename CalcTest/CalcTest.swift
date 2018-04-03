@@ -17,11 +17,14 @@ let calcPath = ProcessInfo.processInfo.environment["CALC_PATH"] ?? calcBundle.pa
 enum calcError: Error {
     case exitStatus(Int32)
     case timeout
+    case launchFailed
 }
 extension calcError: Equatable {
     static func ==(lhs: calcError, rhs: calcError)->Bool {
         switch (lhs, rhs) {
         case (.timeout, .timeout):
+            return true
+        case (.launchFailed, .launchFailed):
             return true
         default:
             return false
@@ -45,7 +48,16 @@ class calcProcess {
         task.standardOutput = stdout
         task.launchPath = calcPath
         task.arguments = arguments
-        task.launch()
+        do {
+            task.launch()
+            if !task.isRunning {
+                throw calcError.launchFailed
+            }
+        } catch _ {
+            output = "<Failed to Launch>"
+            status = calcError.launchFailed
+            return
+        }
         
         var timedOut = false
         DispatchQueue.main.asyncAfter(deadline: .now()+5.0) {
@@ -53,16 +65,17 @@ class calcProcess {
             task.terminate()
         }
         task.waitUntilExit()
-        
+                
+        let data: Data = stdout.fileHandleForReading.readDataToEndOfFile()
+        output = String(bytes: data, encoding: String.Encoding.utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
         if (timedOut) {
             status = calcError.timeout
+            output += "<Timed Out>"
         }
         else if (task.terminationStatus != 0) {
             status = calcError.exitStatus(task.terminationStatus)
         }
-        
-        let data: Data = stdout.fileHandleForReading.readDataToEndOfFile()
-        output = String(bytes: data, encoding: String.Encoding.utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 }
 
