@@ -205,6 +205,10 @@ class CalcTest: XCTestCase {
         
         task = calcProcess(n1, "+", n2, "+", n3, "+", n4)
         XCTAssertEqual(task.output, String(n1 + n2 + n3 + n4), task.input)
+    }
+
+    func testAddExtended() {
+        var task: calcProcess
         
         var nums: [Int] = []
         var args: [String] = []
@@ -222,7 +226,7 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
-    
+
     func testSubtract() {
         var task: calcProcess
         let n1 = randomSource.nextInt(upperBound:100)
@@ -267,7 +271,30 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
+
     
+    func testSubtractExtended() {
+        var task: calcProcess
+        
+        var nums: [Int] = []
+        var args: [String] = []
+        for _ in 0...20 {
+            let n = randomSource.nextInt(upperBound:10000) - 5000
+            nums.append(n)
+            if args.count > 0 {
+                args.append("-")
+            }
+            args.append(String(n))
+        }
+        let sum: Int = nums[1...].reduce(nums[0]) { (a: Int, b: Int) -> Int in
+            a - b
+        }
+        task = calcProcess(args)
+        XCTAssertEqual(task.output, String(sum), task.input)
+    }
+
+
+
     func testMultiply() {
         var task: calcProcess
         let n1 = randomSource.nextInt(upperBound:100)+1
@@ -285,6 +312,10 @@ class CalcTest: XCTestCase {
         
         task = calcProcess(n1, "x", n2, "x", n3)
         XCTAssertEqual(task.output, String(n1 * n2 * n3), task.input)
+    }
+    
+    func testMultiplyExtended() {
+        var task: calcProcess
         
         var nums: [Int] = []
         var args: [String] = []
@@ -302,6 +333,7 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
+    
     
     func testDivide() {
         var task: calcProcess
@@ -422,7 +454,7 @@ class CalcTest: XCTestCase {
         let task6 = calcProcess(1, "+", 2, "+", 3, "x", 4, "/", 2, "+", 5, "+", 6, "/", 2, "x", 7, "+", 8)
         XCTAssertEqual(task6.output, String(expected), task6.input)
     }
-    
+
     func testOutOfBounds() {
         let support64bit = (calcProcess(Int.max).output == String(Int.max))
         var min = Int.min
