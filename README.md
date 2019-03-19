@@ -8,7 +8,7 @@
 
 Individual programming project: Command-line calculator
 
-Due 3rd April 2018 at 11:59 pm  
+Due 5rd April 2019 at 11:59 pm  
 
 This project is worth 25% of the overall mark for this subject.
 
@@ -134,11 +134,30 @@ The Xcode project must unzip successfully and compile without errors.
 
 #### Design: 6 marks
 
-- **Functional separation**: Is the problem broken down into meaningful parts?  
-- **Loose coupling**: Can parts be changed in isolation of each other?  
-- **Extensibility**: Would it be easy to add more functionality? (more operations, more numerical accuracy, interactivity, variables, etc)  
-- **Control flow**: Are all actions of the same type handled at the same level?  
-- **Error handling**: Are errors detected at appropriate places? Can they be collected somewhere central?  
+- **Functional separation** 
+    - Is the problem broken down into functions, classes and different files? 
+    - Is each class addressing a meaningful problem domain?
+    - An example of **bad** functional separation: Everything in one big file with very large functions and many global variables.
+- **Loose coupling**
+    - Can parts of the code base be modified in isolation? Would changing one portion require significant changes throughout the code base? 
+    - Is data passed between components in a structured way?
+    - An example of **good** loose coupling is when functionality can be re-used in multiple components and potentially different projects.
+
+- **Extensibility**
+    - Would it be easy to add more functionality? (more operations, more numerical accuracy, interactivity, variables, etc)	
+    - Can extra functionality be added to the program with minimal changes. Such as supporting different levels of precedence?
+    - **Bad** extensibility would involve many hard-coded strings that are used in multiple places.
+
+- **Control flow**
+    - Are all actions of the same type handled at the same level?
+    - Can another developer understand the logic flow of your program by reading the main entry point? 
+    - **Bad** control flow could be caused by exiting the program outside of the main routine.
+
+- **Error handling**
+    - Are errors detected at appropriate places? Can they be collected somewhere central?
+    - Are errors correctly thrown and caught? Are they appropriately handled in the main routine?
+    - Is the user presented with meaningful errors when they do something incorrectly such as providing invalid input?
+
 - **Marker's discretion**
 
 #### Late submission
