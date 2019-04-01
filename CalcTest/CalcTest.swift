@@ -35,6 +35,7 @@ extension calcError: Equatable {
 class calcProcess {
     var input: String
     var output: String
+    var error: String
     var status: calcError?
     
     convenience init(_ args:Any...) {
@@ -49,7 +50,9 @@ class calcProcess {
         
         let task = Process()
         let stdout = Pipe()
+        let stderr = Pipe()
         task.standardOutput = stdout
+        task.standardError = stderr
         task.launchPath = calcPath
         task.arguments = arguments
         do {
@@ -59,6 +62,7 @@ class calcProcess {
             }
         } catch _ {
             output = "<Failed to Launch>"
+            error = "<Failed to Launch"
             status = calcError.launchFailed
             return
         }
@@ -73,9 +77,13 @@ class calcProcess {
         let data: Data = stdout.fileHandleForReading.readDataToEndOfFile()
         output = String(bytes: data, encoding: String.Encoding.utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         
+        let errData: Data = stderr.fileHandleForReading.readDataToEndOfFile()
+        error = String(bytes: errData, encoding: String.Encoding.utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        
         if (timedOut) {
             status = calcError.timeout
             output += "<Timed Out>"
+            error += "<Timed Out>"
         }
         else if (task.terminationStatus != 0) {
             status = calcError.exitStatus(task.terminationStatus)
@@ -118,59 +126,87 @@ class CalcTest: XCTestCase {
         
         // expect out-of-bounds parsing to emit an error
         task = calcProcess("\(Int.max)\(randomSource.nextInt(upperBound:90)+10)")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("-\(Int.max)\(randomSource.nextInt(upperBound:90)+10)")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         // various invalid things
         task = calcProcess("x")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("10101", "10110")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("33", "-")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("66", "-6")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("3.1", "-4", "xyz")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("2", "+", "n")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("50%", "+", "25%")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("3", "x", "4.5.6")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("7", "foo", "8")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("12", "x", "/", "2")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("12", "+")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
         
         task = calcProcess("12", "++", "12")
+        XCTAssertNotNil(task.status, "exit with nonzero, non fatal status on invalid input: \(task.input)")
+        XCTAssert(!task.error.contains("Fatal"), "exit with nonzero, non fatal status on invalid input: \(task.input)")
         XCTAssertNotNil(task.status, "exit with nonzero status on invalid input: \(task.input)")
         XCTAssert(task.status != calcError.timeout, "exit with nonzero status on invalid input: \(task.input)")
     }
@@ -206,7 +242,7 @@ class CalcTest: XCTestCase {
         task = calcProcess(n1, "+", n2, "+", n3, "+", n4)
         XCTAssertEqual(task.output, String(n1 + n2 + n3 + n4), task.input)
     }
-
+    
     func testAddExtended() {
         var task: calcProcess
         
@@ -226,7 +262,7 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
-
+    
     func testSubtract() {
         var task: calcProcess
         let n1 = randomSource.nextInt(upperBound:100)
@@ -271,7 +307,7 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
-
+    
     
     func testSubtractExtended() {
         var task: calcProcess
@@ -292,9 +328,9 @@ class CalcTest: XCTestCase {
         task = calcProcess(args)
         XCTAssertEqual(task.output, String(sum), task.input)
     }
-
-
-
+    
+    
+    
     func testMultiply() {
         var task: calcProcess
         let n1 = randomSource.nextInt(upperBound:100)+1
@@ -368,13 +404,19 @@ class CalcTest: XCTestCase {
         
         let n1 = randomSource.nextInt(upperBound:100) + 1
         let task1 = calcProcess(n1, "/", 0)
+        
+        XCTAssertNotNil(task1.status, "exit with nonzero, non fatal status when dividing by zero: \(task1.input)")
+        XCTAssert(!task1.error.contains("Fatal"), "exit with nonzero, non fatal status when dividing by zero: \(task1.input)")
         XCTAssertNotNil(task1.status, "exit with nonzero status when dividing by zero: \(task1.input)")
-        XCTAssert(task1.status != calcError.timeout, "exit with nonzero status when dividing by zero: \(task1.input)")
+        XCTAssert(task1.status != calcError.timeout, "exit with nonzero, non fatal status when dividing by zero: \(task1.input)")
         
         let n2 = randomSource.nextInt(upperBound:100) + 1
         let task2 = calcProcess(n2, "%", 0)
-        XCTAssertNotNil(task2.status, "exit with nonzero status when dividing by zero: \(task2.input)")
-        XCTAssert(task2.status != calcError.timeout, "exit with nonzero status when dividing by zero: \(task2.input)")
+        
+        XCTAssertNotNil(task2.status, "exit with nonzero, non fatal status when dividing by zero: \(task2.input)")
+        XCTAssert(!task2.error.contains("Fatal"), "exit with nonzero, non fatal status when dividing by zero: \(task2.input)")
+        XCTAssertNotNil(task2.status, "exit with nonzero, non fatal status when dividing by zero: \(task2.input)")
+        XCTAssert(task2.status != calcError.timeout, "exit with nonzero, non fatal status when dividing by zero: \(task2.input)")
     }
     
     func testAddSubtract() {
@@ -454,7 +496,7 @@ class CalcTest: XCTestCase {
         let task6 = calcProcess(1, "+", 2, "+", 3, "x", 4, "/", 2, "+", 5, "+", 6, "/", 2, "x", 7, "+", 8)
         XCTAssertEqual(task6.output, String(expected), task6.input)
     }
-
+    
     func testOutOfBounds() {
         let support64bit = (calcProcess(Int.max).output == String(Int.max))
         var min = Int.min
